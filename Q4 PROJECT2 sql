@@ -1,0 +1,141 @@
+create database PROJECT2;
+use PROJECT2
+SELECT * FROM STORE;
+CREATE TABLE STORE (
+    RowID INT,
+    OrderID VARCHAR(50),
+    OrderDate DATE,
+    ShipDate DATE,
+    ShipMode VARCHAR(50),
+    CustomerID VARCHAR(50),
+    CustomerName VARCHAR(100),
+    Segment VARCHAR(50),
+    Country VARCHAR(100),
+    City VARCHAR(100),
+    State VARCHAR(100),
+    PostalCode VARCHAR(20),
+    Region VARCHAR(50),
+    ProductID VARCHAR(50),
+    Category VARCHAR(50),
+    SubCategory VARCHAR(50),
+    ProductName VARCHAR(100),
+    Sales DECIMAL(18, 2),
+    Quantity INT,
+    Discount DECIMAL(18, 2),
+    Profit DECIMAL(18, 2)
+);
+
+-- IMPORTING THE DATASET
+select * from q4sql;
+
+-- 1.Select the data that is making a profit
+SELECT * FROM q4sql WHERE Profit > 0;
+
+-- 2.Select the data that is making a profit with discount >= 0.5
+SELECT * FROM q4sql WHERE Profit > 0 AND Discount >= 0.5;
+
+-- 3.Select unique customerIDs
+SELECT DISTINCT `Customer ID` FROM q4sql LIMIT 0, 1000;
+
+
+-- 4.Take the categories & subcategories where a unique customerID is present
+SELECT DISTINCT Category, 'Sub-Category' FROM q4sql WHERE `Customer ID` = 'your_customer_id';
+
+
+-- 5.Select the city with the most profit
+SELECT City, SUM(Profit) AS TotalProfit 
+FROM q4sql
+GROUP BY City 
+ORDER BY TotalProfit DESC 
+LIMIT 1;
+
+-- 6.Create a new table duplicate TABLE
+CREATE TABLE Duplicate_your_table AS SELECT * FROM q4sql;
+select * from Duplicate_your_table;
+
+
+-- 7.In the new table, delete the rows whose discount is < 0.3
+DELETE FROM Duplicate_your_table WHERE Discount < 0.3 LIMIT 100;
+
+
+-- 8.Find which category is sold the most
+SELECT Category, COUNT(*) AS SalesCount 
+FROM q4sql
+GROUP BY Category 
+ORDER BY SalesCount DESC 
+LIMIT 1;
+
+-- 9.Find which ship mode made the most profit
+SELECT 'Ship Mode', SUM(Profit) AS TotalProfit 
+FROM q4sql 
+GROUP BY 'Ship Mode' 
+ORDER BY TotalProfit DESC 
+LIMIT 1;
+
+-- 10.Get which subcategories have the highest quantity
+SELECT 'Sub-Category', SUM(Quantity) AS TotalQuantity 
+FROM q4sql
+GROUP BY 'Sub-Category' 
+ORDER BY TotalQuantity DESC 
+LIMIT 1;
+
+-- 11.Select the rank of 21-31 most sales record
+SELECT OrderID, q4sql
+FROM (
+    SELECT OrderID, RANK() OVER (ORDER BY Sales DESC) AS Rank
+    FROM q4sql
+) AS RankedSales
+WHERE Rank BETWEEN 21 AND 31;
+
+-- 12. Create a new column combining category & subcategories
+ALTER TABLE q4sql ADD COLUMN NewColumn VARCHAR(255);
+select * from q4sql;
+
+UPDATE q4sql
+SET NewColumn = CONCAT(Category, '-', 'Sub-Category')
+LIMIT 100;
+
+-- 13. Select the data shipped after 8/3/2015 and before 1/10/2017
+SELECT *
+FROM q4sql
+WHERE 'Ship Date' > '2015-08-03' AND 'Ship Date' < '2017-01-10';
+
+-- 14. the most used CustomerID
+SELECT 'Customer ID', COUNT(*) AS TotalOrders
+FROM q4sql
+GROUP BY 'Customer ID'
+ORDER BY TotalOrders DESC
+LIMIT 1;
+
+-- 15. a new column having customer_name_length
+ALTER TABLE q4sql ADD COLUMN CustomerNameLen INT;
+
+UPDATE q4sql 
+SET CustomerNameLen = LENGTH('Customer Name') 
+WHERE KeyColumn = 'value';
+
+DESC q4sql;
+
+-- 16. How many unique orders created
+SELECT COUNT(DISTINCT 'Order ID') AS UniqueOrders
+FROM q4sql;
+
+-- 17. What OrderID has the most sales
+SELECT 'Order ID', SUM(Sales) AS TotalSales
+FROM q4sql
+GROUP BY 'Order ID'
+ORDER BY TotalSales DESC
+LIMIT 1;
+
+-- 18. Rank the OrderID based on the sales, grouped by city
+SELECT 'Order ID', City, RANK() OVER (PARTITION BY City ORDER BY Sales DESC) AS SalesRank
+FROM q4sql;
+
+-- 19. Find the window function-sum based on partition by date
+SELECT 'Ship Date', SUM(Sales) OVER (PARTITION BY 'Ship Date') AS TotalSales
+FROM q4sql;
+
+-- 20. ProductID sales
+SELECT 'Product ID', SUM(Sales) AS TotalSales
+FROM q4sql 
+GROUP BY 'Product ID';
